@@ -1,6 +1,8 @@
 use crate::open_file::OpenFile;
-#[allow(unused)] // TODO: delete this line for Milestone 3
 use std::fs;
+use std::{fmt::Display};
+use std::fmt;
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Process {
@@ -10,9 +12,13 @@ pub struct Process {
 }
 
 impl Process {
-    #[allow(unused)] // TODO: delete this line for Milestone 1
+     // TODO: delete this line for Milestone 1
     pub fn new(pid: usize, ppid: usize, command: String) -> Process {
         Process { pid, ppid, command }
+    }
+
+    pub fn print(&self) {
+        println!("========== \"{}\" (pid {}, ppid {}) =========", self.command, self.pid, self.ppid);
     }
 
     /// This function returns a list of file descriptor numbers for this Process, if that
@@ -22,8 +28,16 @@ impl Process {
     /// descriptor table.)
     #[allow(unused)] // TODO: delete this line for Milestone 3
     pub fn list_fds(&self) -> Option<Vec<usize>> {
-        // TODO: implement for Milestone 3
-        unimplemented!();
+        
+        let path = format!("/proc/{}/fd", self.pid);
+        let mut fds : Vec<usize>=Vec::new();
+        
+        for entry in fs::read_dir(path).ok()? {
+            let entry = entry.ok()?;
+            let filenum = entry.file_name().to_str()?.parse::<usize>().ok()?;
+            fds.push(filenum);
+        }
+        Some(fds)
     }
 
     /// This function returns a list of (fdnumber, OpenFile) tuples, if file descriptor
@@ -36,6 +50,12 @@ impl Process {
             open_files.push((fd, OpenFile::from_fd(self.pid, fd)?));
         }
         Some(open_files)
+    }
+}
+
+impl Display for Process {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "========== \"{}\" (pid {}, ppid {}) ==========", self.command, self.pid, self.ppid)
     }
 }
 

@@ -1,5 +1,7 @@
 use std::env;
 
+use crate::{ps_utils::get_target};
+
 mod open_file;
 mod process;
 mod ps_utils;
@@ -14,7 +16,19 @@ fn main() {
     let target = &args[1];
 
     // TODO: Milestone 1: Get the target Process using psutils::get_target()
-    unimplemented!();
+    let tar_result = get_target(&target).expect("get target wrong!");
+    match tar_result {
+        None => {
+            print!("No matching process for target:{}", target);
+            std::process::exit(1);
+        },
+        Some(pr) => {
+            pr.print();
+            //println!("pid: {}", pr.pid);
+        }
+    }
+    
+    // unimplemented!();
 }
 
 #[cfg(test)]
